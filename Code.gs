@@ -4,12 +4,12 @@
  * 시트 `places` 열: id | createdAt | name | kind | link | memo | addedBy | lat | lon
  * lat/lon 은 네이버 지도 링크에서 찾는다. 못 찾으면 lat 에 '-' 를 적어 다시 찾지 않는다.
  * 링크를 아는 가족 누구나 추가·삭제할 수 있다 (비밀번호 없음).
+ * 종류(kind)는 사이트(index.html)에서 정한다. 여기서는 길이만 본다.
  * 배포: 웹 앱, 실행 계정 "나", 액세스 "모든 사용자".
  */
 
 const SHEET_NAME = 'places';
 const HEADERS = ['id', 'createdAt', 'name', 'kind', 'link', 'memo', 'addedBy', 'lat', 'lon'];
-const KINDS = ['식당', '카페', '가볼 곳'];
 
 function doGet() {
   try {
@@ -52,7 +52,7 @@ function add_(body) {
 
   if (!name) return json_({ ok: false, error: 'name_required' });
   if (name.length > 60) return json_({ ok: false, error: 'name_too_long' });
-  if (KINDS.indexOf(kind) < 0) return json_({ ok: false, error: 'bad_kind' });
+  if (!kind || kind.length > 10) return json_({ ok: false, error: 'bad_kind' });
   if (link && !/^https:\/\/\S+$/.test(link)) return json_({ ok: false, error: 'bad_link' });
   if (memo.length > 200) return json_({ ok: false, error: 'memo_too_long' });
   if (addedBy.length > 20) return json_({ ok: false, error: 'by_too_long' });
