@@ -13,7 +13,7 @@
 :root{
   --bg:#F3F5F1; --surface:#FFFFFF; --fg:#1F2622; --muted:#5E6A63; --line:#D9DFDA;
   --land:#DCE8CF; --sea:#CFE2F0; --coast:#7FA9CC; --oreum:#A9C48B;
-  --stay:#C2491D; --food:#E08A1E; --cafe:#8C5A3C; --dessert:#C2457A; --mart:#4F5FB8; --spot:#2E7D6B;
+  --stay:#C2491D; --food:#E08A1E; --cafe:#8C5A3C; --mart:#4F5FB8; --spot:#2E7D6B;
   --font-display:"Gowun Batang", "Nanum Myeongjo", serif;
   --font-body:"IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
   color-scheme:light;
@@ -21,11 +21,11 @@
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#151A18; --surface:#1E2522; --fg:#E7ECE8; --muted:#9AA79F; --line:#2E3833;
   --land:#24331F; --sea:#16283A; --coast:#3F6A90; --oreum:#3D5A2C;
-  --stay:#F07A4E; --food:#F2A94A; --cafe:#C9997A; --dessert:#EE8AB4; --mart:#97A3F0; --spot:#4FB89E; color-scheme:dark}}
+  --stay:#F07A4E; --food:#F2A94A; --cafe:#C9997A; --mart:#97A3F0; --spot:#4FB89E; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#151A18; --surface:#1E2522; --fg:#E7ECE8; --muted:#9AA79F; --line:#2E3833;
   --land:#24331F; --sea:#16283A; --coast:#3F6A90; --oreum:#3D5A2C;
-  --stay:#F07A4E; --food:#F2A94A; --cafe:#C9997A; --dessert:#EE8AB4; --mart:#97A3F0; --spot:#4FB89E; color-scheme:dark}
+  --stay:#F07A4E; --food:#F2A94A; --cafe:#C9997A; --mart:#97A3F0; --spot:#4FB89E; color-scheme:dark}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:15px;line-height:1.6;-webkit-text-size-adjust:100%}
 [hidden]{display:none!important}
@@ -74,7 +74,7 @@ form h3{margin:0;font-size:15px}
 .err:empty{display:none}
 .note{font-size:12px;color:var(--muted)}
 .err.ok{color:var(--spot)}
-.kinds{border:0;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;min-width:0}
+.kinds{border:0;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,1fr);gap:8px;min-width:0}
 .kinds legend{font-size:13px;color:var(--muted);padding:0;margin-bottom:4px}
 .kind{position:relative;min-width:0}
 .kind input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
@@ -158,10 +158,9 @@ form h3{margin:0;font-size:15px}
         <g font-size="12">
           <circle cx="40" cy="40" r="6" style="fill:var(--stay)"/><text x="54" y="44">숙소</text>
           <circle cx="40" cy="62" r="6" style="fill:var(--food)"/><text x="54" y="66">식당</text>
-          <circle cx="40" cy="84" r="6" style="fill:var(--cafe)"/><text x="54" y="88">카페</text>
-          <circle cx="40" cy="106" r="6" style="fill:var(--dessert)"/><text x="54" y="110">디저트</text>
+          <circle cx="40" cy="84" r="6" style="fill:var(--cafe)"/><text x="54" y="88">카페/베이커리</text>
+          <circle cx="40" cy="106" r="6" style="fill:var(--mart)"/><text x="54" y="110">마트</text>
           <circle cx="40" cy="128" r="6" style="fill:var(--spot)"/><text x="54" y="132">가볼 만한 곳</text>
-          <circle cx="40" cy="150" r="6" style="fill:var(--mart)"/><text x="54" y="154">마트</text>
         </g>
         <path d="M620 590 V562 M612 572 L620 562 L628 572" fill="none" style="stroke:var(--fg)" stroke-width="1.5"/>
         <text x="636" y="580" font-size="14" font-weight="600">N</text>
@@ -238,16 +237,16 @@ form h3{margin:0;font-size:15px}
   </section>
 
   <section>
-    <h2><span class="dot" style="background:var(--cafe)"></span>카페</h2>
-    <div class="list" id="list-카페">
-      <p class="added-empty" data-kind="카페">아직 없어요. 괜찮은 카페를 찾으면 아래에서 추가해 주세요.</p>
+    <h2><span class="dot" style="background:var(--cafe)"></span>카페/베이커리</h2>
+    <div class="list" id="list-카페/베이커리">
+      <p class="added-empty" data-kind="카페/베이커리">아직 없어요. 괜찮은 카페나 빵집을 찾으면 아래에서 추가해 주세요.</p>
     </div>
   </section>
 
   <section>
-    <h2><span class="dot" style="background:var(--dessert)"></span>디저트</h2>
-    <div class="list" id="list-디저트">
-      <p class="added-empty" data-kind="디저트">아직 없어요. 빵집, 아이스크림, 디저트 가게를 찾으면 아래에서 추가해 주세요.</p>
+    <h2><span class="dot" style="background:var(--mart)"></span>마트</h2>
+    <div class="list" id="list-마트">
+      <p class="added-empty" data-kind="마트">아직 없어요. 장 볼 마트나 하나로마트를 찾으면 아래에서 추가해 주세요.</p>
     </div>
   </section>
 
@@ -267,25 +266,17 @@ form h3{margin:0;font-size:15px}
     </div>
   </section>
 
-  <section>
-    <h2><span class="dot" style="background:var(--mart)"></span>마트</h2>
-    <div class="list" id="list-마트">
-      <p class="added-empty" data-kind="마트">아직 없어요. 장 볼 마트나 하나로마트를 찾으면 아래에서 추가해 주세요.</p>
-    </div>
-  </section>
-
   <section id="add">
     <h2>찾은 곳 추가하기</h2>
-    <p class="sub" style="font-size:14px">종류를 고르면 위의 식당·카페·디저트·가볼 만한 곳·마트 목록에 함께 보여요.</p>
+    <p class="sub" style="font-size:14px">종류를 고르면 위의 식당·카페/베이커리·마트·가볼 만한 곳 목록에 함께 보여요.</p>
     <p class="err" id="list-err" role="alert"></p>
     <form id="add-form" novalidate>
       <fieldset class="kinds">
         <legend>종류</legend>
         <label class="kind" style="--k:var(--food)"><input type="radio" name="kind" value="식당" checked><span><i></i>식당</span></label>
-        <label class="kind" style="--k:var(--cafe)"><input type="radio" name="kind" value="카페"><span><i></i>카페</span></label>
-        <label class="kind" style="--k:var(--dessert)"><input type="radio" name="kind" value="디저트"><span><i></i>디저트</span></label>
-        <label class="kind" style="--k:var(--spot)"><input type="radio" name="kind" value="가볼 만한 곳"><span><i></i>가볼 만한 곳</span></label>
+        <label class="kind" style="--k:var(--cafe)"><input type="radio" name="kind" value="카페/베이커리"><span><i></i>카페/베이커리</span></label>
         <label class="kind" style="--k:var(--mart)"><input type="radio" name="kind" value="마트"><span><i></i>마트</span></label>
+        <label class="kind" style="--k:var(--spot)"><input type="radio" name="kind" value="가볼 만한 곳"><span><i></i>가볼 만한 곳</span></label>
       </fieldset>
       <div class="field">
         <label for="f-name">장소 이름</label>
@@ -346,7 +337,8 @@ const CANDIDATES = [
 
 (function(){
   const BY_KEY = 'jejuTrip.addedBy';
-  const KINDS = ['식당', '카페', '디저트', '가볼 만한 곳', '마트'];
+  const KINDS = ['식당', '카페/베이커리', '마트', '가볼 만한 곳'];
+  const OLD_KIND = { '카페': '카페/베이커리', '디저트': '카페/베이커리', '가볼 곳': '가볼 만한 곳' };
   const MSG = {
     name_required: '장소 이름을 입력해 주세요.',
     name_too_long: '장소 이름은 60자까지 쓸 수 있어요.',
@@ -374,7 +366,7 @@ const CANDIDATES = [
     { name: '따라비오름', kind: '가볼 만한 곳', lat: 33.3870582, lon: 126.7534582, link: 'https://naver.me/x7eIQLMG', label: true },
     { name: '빛의 벙커', kind: '가볼 만한 곳', lat: 33.4399386, lon: 126.8990193, link: 'https://naver.me/GKIP2zqi', label: true },
   ];
-  const COLOR = { '숙소': 'var(--stay)', '식당': 'var(--food)', '카페': 'var(--cafe)', '디저트': 'var(--dessert)', '가볼 만한 곳': 'var(--spot)', '마트': 'var(--mart)' };
+  const COLOR = { '숙소': 'var(--stay)', '식당': 'var(--food)', '카페/베이커리': 'var(--cafe)', '마트': 'var(--mart)', '가볼 만한 곳': 'var(--spot)' };
   const localXY = (lat, lon) => [40 + (lon - 126.72) * 2500, 50 + (33.45 - lat) * 2975];
   const islandXY = (lat, lon) => [21 + (lon - 126.14) * 760, 20 + (33.58 - lat) * 910];
   const inLocal = ([x, y]) => x > 12 && x < 668 && y > 12 && y < 588;
@@ -469,9 +461,9 @@ const CANDIDATES = [
       const res = await fetch(API_URL);
       const data = await res.json();
       if (!data.ok) throw new Error(data.error);
-      // 예전 종류 이름 '가볼 곳'으로 저장된 줄도 '가볼 만한 곳'으로 보여 준다.
+      // 예전 종류 이름으로 저장된 줄도 지금 종류로 보여 준다.
       places = (Array.isArray(data.places) ? data.places : [])
-        .map(p => p.kind === '가볼 곳' ? { ...p, kind: '가볼 만한 곳' } : p)
+        .map(p => OLD_KIND[p.kind] ? { ...p, kind: OLD_KIND[p.kind] } : p)
         .map(withCoord);
       listErr.textContent = '';
     } catch (e) {
@@ -515,7 +507,7 @@ const CANDIDATES = [
   }
 
   function render(){
-    // 가족이 추가한 곳은 고른 종류(식당·카페·디저트·가볼 만한 곳·마트)의 목록 끝에 붙인다.
+    // 가족이 추가한 곳은 고른 종류(식당·카페/베이커리·마트·가볼 만한 곳)의 목록 끝에 붙인다.
     document.querySelectorAll('.card.added').forEach(n => n.remove());
     document.querySelectorAll('.added-empty[data-kind]').forEach(n => { n.hidden = places.some(p => p.kind === n.dataset.kind); });
     for (const p of places) {
