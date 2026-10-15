@@ -445,26 +445,37 @@ const CANDIDATES = [
 
   function safeLink(v){ return /^https:\/\/\S+$/.test(v || '') ? v : null; }
 
+  // 응답이 너무 늦으면 기다리지 않고 실패로 본다 (멈춘 것처럼 보이지 않게).
+  const timeout = ms => (window.AbortSignal && AbortSignal.timeout) ? AbortSignal.timeout(ms) : undefined;
+
   async function post(body){
     // text/plain 이어야 CORS preflight 없이 Apps Script로 보낼 수 있다.
     const res = await fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify(body),
+      signal: timeout(25000),
     });
     return res.json();
+  }
+
+  // 마지막으로 받은 목록을 이 휴대폰에 저장해 두고, 다음에 열 때 먼저 보여 준다.
+  const LIST_KEY = 'jejuTrip.places';
+  function useList(list){
+    places = list
+      .map(p => OLD_KIND[p.kind] ? { ...p, kind: OLD_KIND[p.kind] } : p)
+      .map(withCoord);
   }
 
   async function refresh(){
     if (!API_URL) { render(); return; }
     try {
-      const res = await fetch(API_URL);
+      const res = await fetch(API_URL, { signal: timeout(25000) });
       const data = await res.json();
       if (!data.ok) throw new Error(data.error);
-      // 예전 종류 이름으로 저장된 줄도 지금 종류로 보여 준다.
-      places = (Array.isArray(data.places) ? data.places : [])
-        .map(p => OLD_KIND[p.kind] ? { ...p, kind: OLD_KIND[p.kind] } : p)
-        .map(withCoord);
+      const list = Array.isArray(data.places) ? data.places : [];
+      useList(list);
+      save(LIST_KEY, JSON.stringify(list));
       listErr.textContent = '';
     } catch (e) {
       listErr.textContent = MSG.load_failed;
@@ -604,6 +615,7 @@ const CANDIDATES = [
     }
   });
 
+  try { const saved = JSON.parse(load(LIST_KEY) || 'null'); if (Array.isArray(saved)) { useList(saved); render(); } } catch (e) {}
   refresh();
 })();
 </script>
