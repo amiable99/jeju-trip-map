@@ -297,6 +297,8 @@ form h3{margin:0;font-size:15px}
 <script>
 // Apps Script 웹 앱 URL (…/exec). 배포 방법은 README.md 참고.
 const API_URL = 'https://script.google.com/macros/s/AKfycbwAvz01hJNz3qg-Um_XpcWPy5Kwc1A4hctKycINbvL8fIsy5dAxIuU1ldH7qcmxcJdT/exec';
+// 네이버 지도 링크 → 좌표. Google 서버(Apps Script)는 네이버가 막아서 sportsmagicnum.com 서버에서 찾는다.
+const COORD_API = 'https://sportsmagicnum.com/api/naver-coord?url=';
 
 // 조사했지만 아직 확정 안 된 후보 (화면에는 넣지 않음). 지도에 올릴 때는 위 SVG 주석의 좌표 변환식을 쓴다.
 const CANDIDATES = [
@@ -449,12 +451,13 @@ const CANDIDATES = [
       const res = await fetch(API_URL);
       const data = await res.json();
       if (!data.ok) throw new Error(data.error);
-      places = Array.isArray(data.places) ? data.places : [];
+      places = (Array.isArray(data.places) ? data.places : []).map(withCoord);
       listErr.textContent = '';
     } catch (e) {
       listErr.textContent = MSG.load_failed;
     }
     render();
+    findCoords();
   }
 
   function el(tag, cls, text){
@@ -462,6 +465,32 @@ const CANDIDATES = [
     if (cls) n.className = cls;
     if (text != null) n.textContent = text;
     return n;
+  }
+
+  // 시트에 좌표가 없는 곳은 링크로 좌표를 찾아 이 휴대폰에 저장해 둔다.
+  const coordOf = {};
+  const coordDone = new Set();
+  const COORD_KEY = 'jejuTrip.coord:';
+
+  function withCoord(p){
+    if (p.lat && p.lon) return p;
+    const c = coordOf[p.link] || (() => { try { return JSON.parse(load(COORD_KEY + p.link) || 'null'); } catch (e) { return null; } })();
+    if (c) { coordOf[p.link] = c; coordDone.add(p.link); return { ...p, lat: c.lat, lon: c.lon }; }
+    return p;
+  }
+
+  async function findCoords(){
+    const todo = [...new Set(places.filter(p => p.link && !(p.lat && p.lon) && !coordDone.has(p.link)).map(p => p.link))];
+    if (!todo.length) return;
+    await Promise.all(todo.map(async link => {
+      try {
+        const r = await (await fetch(COORD_API + encodeURIComponent(link))).json();
+        if (r.ok) { coordOf[link] = { lat: r.lat, lon: r.lon }; save(COORD_KEY + link, JSON.stringify(coordOf[link])); }
+      } catch (e) {}
+      coordDone.add(link);
+    }));
+    places = places.map(withCoord);
+    render();
   }
 
   function render(){
@@ -474,7 +503,7 @@ const CANDIDATES = [
       card.appendChild(el('span', 'name', p.name || ''));
       const meta = el('span', 'meta');
       if (p.memo) meta.appendChild(el('span', null, p.memo));
-      if (p.link && !(p.lat && p.lon)) meta.appendChild(el('span', 'by', '지도 위치를 못 찾았어요'));
+      if (p.link && !(p.lat && p.lon)) meta.appendChild(el('span', 'by', coordDone.has(p.link) ? '지도 위치를 못 찾았어요' : '지도 위치 찾는 중…'));
       meta.appendChild(el('span', 'by', '추가: ' + (p.addedBy || '가족')));
       card.appendChild(meta);
       const link = safeLink(p.link);
