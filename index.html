@@ -74,7 +74,6 @@ form h3{margin:0;font-size:15px}
 .submit{align-self:flex-start;font:inherit;font-weight:600;font-size:15px;padding:10px 18px;border:0;border-radius:8px;background:var(--spot);color:var(--surface);cursor:pointer}
 .submit:disabled{opacity:.6;cursor:default}
 .submit:focus-visible,.linkbtn:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
-.note{font-size:13px;color:var(--muted);margin:0}
 </style>
 </head>
 <body>
@@ -214,8 +213,8 @@ form h3{margin:0;font-size:15px}
     <div class="list" id="added-list">
       <p class="added-empty" id="added-empty">불러오는 중이에요…</p>
     </div>
-    <form id="add-form" novalidate hidden>
-      <h3>장소 추가하기</h3>
+    <form id="add-form" novalidate>
+      <h3>찾은 곳 추가하기</h3>
       <div class="row">
         <div class="field">
           <label for="f-name">장소 이름</label>
@@ -238,20 +237,13 @@ form h3{margin:0;font-size:15px}
         <label for="f-memo">메모 (선택)</label>
         <textarea id="f-memo" name="memo" maxlength="200" placeholder="예: 월요일 휴무, 아이들 좋아할 듯"></textarea>
       </div>
-      <div class="row">
-        <div class="field">
-          <label for="f-by">추가하는 사람 (선택)</label>
-          <input id="f-by" name="addedBy" maxlength="20" placeholder="예: 엄마" autocomplete="off">
-        </div>
-        <div class="field" id="pin-field">
-          <label for="f-pin">가족 비밀번호</label>
-          <input id="f-pin" name="pin" type="password" inputmode="numeric" autocomplete="off">
-        </div>
+      <div class="field">
+        <label for="f-by">추가하는 사람 (선택)</label>
+        <input id="f-by" name="addedBy" maxlength="20" placeholder="예: 엄마" autocomplete="off">
       </div>
       <p class="err" id="f-err" role="alert"></p>
       <button class="submit" id="f-submit" type="submit">추가하기</button>
     </form>
-    <p class="note" id="add-note" hidden>아직 저장소가 연결되지 않았어요. 추가하고 싶은 곳은 정리하는 사람에게 알려 주세요.</p>
   </section>
 
   <footer>운영시간과 휴무일은 바뀔 수 있으니 가기 전에 네이버 지도에서 한 번 더 확인하세요.</footer>
@@ -288,12 +280,9 @@ const CANDIDATES = [
 ];
 
 (function(){
-  const PIN_KEY = 'jejuTrip.pin';
   const BY_KEY = 'jejuTrip.addedBy';
   const KINDS = ['식당', '카페', '가볼 곳'];
   const MSG = {
-    bad_pin: '비밀번호가 맞지 않아요.',
-    pin_required: '가족 비밀번호를 입력해 주세요.',
     name_required: '장소 이름을 입력해 주세요.',
     name_too_long: '장소 이름은 60자까지 쓸 수 있어요.',
     memo_too_long: '메모는 200자까지 쓸 수 있어요.',
@@ -301,6 +290,7 @@ const CANDIDATES = [
     bad_link: '링크는 https:// 로 시작하는 주소를 붙여넣어 주세요.',
     bad_kind: '종류를 다시 골라 주세요.',
     busy: '다른 가족이 저장하는 중이에요. 잠시 후 다시 눌러 주세요.',
+    no_api: '아직 저장 공간이 연결되지 않아 추가할 수 없어요. 정리하는 사람에게 알려 주세요.',
     add_failed: '추가하지 못했어요. 잠시 후 다시 눌러 주세요.',
     delete_failed: '지우지 못했어요. 잠시 후 다시 눌러 주세요.',
     load_failed: '목록을 불러오지 못했어요. 잠시 후 새로고침해 주세요.',
@@ -308,26 +298,18 @@ const CANDIDATES = [
 
   const $ = id => document.getElementById(id);
   const listEl = $('added-list'), emptyEl = $('added-empty'), listErr = $('list-err');
-  const form = $('add-form'), note = $('add-note'), err = $('f-err'), btn = $('f-submit');
-  const pinField = $('pin-field'), pinInput = $('f-pin');
+  const form = $('add-form'), err = $('f-err'), btn = $('f-submit');
 
   function load(k){ try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } }
   function save(k, v){ try { v ? localStorage.setItem(k, v) : localStorage.removeItem(k); } catch (e) {} }
 
-  let pin = load(PIN_KEY);
   let places = [];
   let confirmId = null;
   let busyId = null;
 
-  if (!API_URL) { emptyEl.hidden = true; note.hidden = false; return; }
-  form.hidden = false;
   $('f-by').value = load(BY_KEY);
-  syncPinField();
 
-  function syncPinField(){ pinField.hidden = !!pin; }
   function safeLink(v){ return /^https:\/\/\S+$/.test(v || '') ? v : null; }
-  function currentPin(){ return pin || pinInput.value.trim(); }
-  function forgetPin(){ pin = ''; save(PIN_KEY, ''); pinInput.value = ''; syncPinField(); }
 
   async function post(body){
     // text/plain 이어야 CORS preflight 없이 Apps Script로 보낼 수 있다.
@@ -340,6 +322,7 @@ const CANDIDATES = [
   }
 
   async function refresh(){
+    if (!API_URL) { render(); return; }
     try {
       const res = await fetch(API_URL);
       const data = await res.json();
@@ -361,7 +344,7 @@ const CANDIDATES = [
 
   function render(){
     listEl.querySelectorAll('.card.added').forEach(n => n.remove());
-    emptyEl.textContent = '아직 추가된 곳이 없어요. 가고 싶은 식당이나 카페가 있으면 아래에서 추가해 주세요.';
+    emptyEl.textContent = '아직 추가된 곳이 없어요. 가고 싶은 식당이나 카페, 가볼 곳을 찾으면 아래에서 추가해 주세요.';
     emptyEl.hidden = places.length > 0;
     for (const p of places) {
       const card = el('div', 'card added');
@@ -398,32 +381,24 @@ const CANDIDATES = [
   }
 
   async function remove(id){
-    const usePin = currentPin();
-    if (!usePin) {
-      listErr.textContent = '지우려면 아래 칸에 가족 비밀번호를 먼저 입력해 주세요.';
-      pinInput.focus();
-      return;
-    }
     busyId = id; render();
     try {
-      const r = await post({ action: 'delete', pin: usePin, id });
+      const r = await post({ action: 'delete', id });
       if (r.ok || r.error === 'not_found') {
-        if (!pin) { pin = usePin; save(PIN_KEY, pin); syncPinField(); }
         confirmId = null;
         listErr.textContent = '';
         busyId = null;
         await refresh();
         return;
       }
-      if (r.error === 'bad_pin') { forgetPin(); listErr.textContent = MSG.bad_pin + ' 아래 칸에 다시 입력해 주세요.'; }
-      else listErr.textContent = MSG[r.error] || MSG.delete_failed;
+      listErr.textContent = MSG[r.error] || MSG.delete_failed;
     } catch (e) {
       listErr.textContent = MSG.delete_failed;
     }
     busyId = null; render();
   }
 
-  ['f-name', 'f-link', 'f-memo', 'f-by', 'f-pin'].forEach(id => $(id).addEventListener('input', () => { err.textContent = ''; }));
+  ['f-name', 'f-link', 'f-memo', 'f-by'].forEach(id => $(id).addEventListener('input', () => { err.textContent = ''; }));
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -432,7 +407,6 @@ const CANDIDATES = [
     const link = $('f-link').value.trim();
     const memo = $('f-memo').value.trim();
     const addedBy = $('f-by').value.trim();
-    const usePin = currentPin();
     const fail = (code, field) => { err.textContent = MSG[code]; if (field) $(field).focus(); };
     if (!name) return fail('name_required', 'f-name');
     if (name.length > 60) return fail('name_too_long', 'f-name');
@@ -440,19 +414,16 @@ const CANDIDATES = [
     if (memo.length > 200) return fail('memo_too_long', 'f-memo');
     if (addedBy.length > 20) return fail('by_too_long', 'f-by');
     if (!KINDS.includes(kind)) return fail('bad_kind', 'f-kind');
-    if (!usePin) return fail('pin_required', 'f-pin');
+    if (!API_URL) return fail('no_api');
 
     btn.disabled = true; btn.textContent = '추가하는 중…'; err.textContent = '';
     try {
-      const r = await post({ action: 'add', pin: usePin, name, kind, link, memo, addedBy });
+      const r = await post({ action: 'add', name, kind, link, memo, addedBy });
       if (r.ok) {
-        if (!pin) { pin = usePin; save(PIN_KEY, pin); syncPinField(); }
         save(BY_KEY, addedBy);
         form.reset();
         $('f-by').value = addedBy;
         await refresh();
-      } else if (r.error === 'bad_pin') {
-        forgetPin(); fail('bad_pin', 'f-pin');
       } else {
         err.textContent = MSG[r.error] || MSG.add_failed;
       }

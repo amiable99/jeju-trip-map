@@ -2,7 +2,7 @@
  * 제주 가족여행 지도 - "가족이 추가한 곳" 저장 API
  *
  * 시트 `places` 열: id | createdAt | name | kind | link | memo | addedBy
- * 비밀번호는 스크립트 속성 FAMILY_PIN 에 둔다 (프로젝트 설정 > 스크립트 속성).
+ * 링크를 아는 가족 누구나 추가·삭제할 수 있다 (비밀번호 없음).
  * 배포: 웹 앱, 실행 계정 "나", 액세스 "모든 사용자".
  */
 
@@ -26,10 +26,6 @@ function doPost(e) {
   } catch (err) {
     return json_({ ok: false, error: 'bad_request' });
   }
-
-  const pin = PropertiesService.getScriptProperties().getProperty('FAMILY_PIN');
-  if (!pin) return json_({ ok: false, error: 'no_pin_set' });
-  if (String(body.pin || '') !== pin) return json_({ ok: false, error: 'bad_pin' });
 
   const lock = LockService.getScriptLock();
   if (!lock.tryLock(10000)) return json_({ ok: false, error: 'busy' });
