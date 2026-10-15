@@ -306,6 +306,9 @@ form h3{margin:0;font-size:15px}
 <script>
 // Apps Script 웹 앱 URL (…/exec). 배포 방법은 README.md 참고.
 const API_URL = 'https://script.google.com/macros/s/AKfycbwAvz01hJNz3qg-Um_XpcWPy5Kwc1A4hctKycINbvL8fIsy5dAxIuU1ldH7qcmxcJdT/exec';
+// 목록 읽기와 추가·삭제는 sportsmagicnum.com 서버를 거친다. 서버가 목록을 들고 있다가 바로 주고, 시트(Apps Script)와는 뒤에서 맞춘다.
+// Apps Script는 응답이 몇 초~수십 초로 들쭉날쭉하고, 가끔 저장은 해 놓고 404를 주기도 해서다.
+const PLACES_API = 'https://sportsmagicnum.com/api/jeju-places';
 // 네이버 지도 링크 → 좌표. Google 서버(Apps Script)는 네이버가 막아서 sportsmagicnum.com 서버에서 찾는다.
 const COORD_API = 'https://sportsmagicnum.com/api/naver-coord?url=';
 
@@ -431,15 +434,16 @@ const CANDIDATES = [
       ...added.map(p => ({ p, xy: islandXY(p.lat, p.lon), r: 6, label: inLocal(localXY(p.lat, p.lon)) ? null : p.name, size: 15 })),
     ]);
   }
-  const form = $('add-form'), err = $('f-err'), btn = $('f-submit');
+  const form = $('add-form'), err = $('f-err');
 
   function load(k){ try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } }
   function save(k, v){ try { v ? localStorage.setItem(k, v) : localStorage.removeItem(k); } catch (e) {} }
 
-  let places = [];
+  let places = [];        // 화면에 보이는 목록 = 서버 목록 - 지우는 중인 곳 + 저장 중인 곳
+  let serverList = [];    // 서버(시트)에서 받은 목록
+  let pendingAdds = [];   // 누르자마자 보여 주고 저장을 기다리는 곳
+  const pendingDeletes = new Set();
   let confirmId = null;
-  let busyId = null;
-  let delErr = null;
 
   $('f-by').value = load(BY_KEY);
 
@@ -449,29 +453,50 @@ const CANDIDATES = [
   const timeout = ms => (window.AbortSignal && AbortSignal.timeout) ? AbortSignal.timeout(ms) : undefined;
 
   async function post(body){
-    // text/plain 이어야 CORS preflight 없이 Apps Script로 보낼 수 있다.
-    const res = await fetch(API_URL, {
+    // text/plain 이어야 CORS preflight 없이 보낼 수 있다. 서버가 Apps Script를 최대 1~2분 기다리므로 넉넉히 기다린다.
+    const res = await fetch(PLACES_API, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify(body),
-      signal: timeout(25000),
+      signal: timeout(150000),
     });
     return res.json();
+  }
+
+  async function getList(){
+    try {
+      const data = await (await fetch(PLACES_API, { signal: timeout(20000) })).json();
+      if (data.ok) return data;
+    } catch (e) {}
+    // 서버가 안 되면 시트(Apps Script)에서 직접 읽는다.
+    return (await fetch(API_URL, { signal: timeout(60000) })).json();
   }
 
   // 마지막으로 받은 목록을 이 휴대폰에 저장해 두고, 다음에 열 때 먼저 보여 준다.
   const LIST_KEY = 'jejuTrip.places';
   function useList(list){
-    places = list
+    serverList = list;
+    rebuild();
+  }
+
+  function rebuild(){
+    places = serverList.filter(p => !pendingDeletes.has(p.id)).concat(pendingAdds)
       .map(p => OLD_KIND[p.kind] ? { ...p, kind: OLD_KIND[p.kind] } : p)
       .map(withCoord);
+  }
+
+  function keepServerList(list){
+    serverList = list;
+    save(LIST_KEY, JSON.stringify(list));
+    rebuild();
+    render();
+    findCoords();
   }
 
   async function refresh(){
     if (!API_URL) { render(); return; }
     try {
-      const res = await fetch(API_URL, { signal: timeout(25000) });
-      const data = await res.json();
+      const data = await getList();
       if (!data.ok) throw new Error(data.error);
       const list = Array.isArray(data.places) ? data.places : [];
       useList(list);
@@ -537,19 +562,20 @@ const CANDIDATES = [
         card.appendChild(a);
       }
       const acts = el('div', 'actions');
-      if (confirmId === p.id) {
-        const yes = el('button', 'linkbtn danger', busyId === p.id ? '지우는 중…' : '지우기');
-        yes.type = 'button'; yes.disabled = busyId === p.id;
+      if (p.pending) {
+        acts.appendChild(el('span', 'by', '저장 중…'));
+      } else if (confirmId === p.id) {
+        const yes = el('button', 'linkbtn danger', '지우기');
+        yes.type = 'button';
         yes.onclick = () => remove(p.id);
         const no = el('button', 'linkbtn', '취소');
-        no.type = 'button'; no.disabled = busyId === p.id;
+        no.type = 'button';
         no.onclick = () => { confirmId = null; render(); };
         acts.append(el('span', 'by', '지울까요?'), yes, no);
-        if (delErr && delErr.id === p.id) acts.appendChild(el('span', 'err', delErr.msg));
       } else {
         const del = el('button', 'linkbtn', '삭제');
         del.type = 'button';
-        del.onclick = () => { confirmId = p.id; delErr = null; render(); };
+        del.onclick = () => { confirmId = p.id; render(); };
         acts.appendChild(del);
       }
       card.appendChild(acts);
@@ -558,22 +584,17 @@ const CANDIDATES = [
     drawMaps();
   }
 
+  // 지우기는 누르자마자 화면에서 빼고, 저장이 실패하면 되돌린다.
   async function remove(id){
-    busyId = id; render();
-    try {
-      const r = await post({ action: 'delete', id });
-      if (r.ok || r.error === 'not_found') {
-        confirmId = null;
-        delErr = null;
-        busyId = null;
-        await refresh();
-        return;
-      }
-      delErr = { id, msg: MSG[r.error] || MSG.delete_failed };
-    } catch (e) {
-      delErr = { id, msg: MSG.delete_failed };
-    }
-    busyId = null; render();
+    const gone = serverList.find(p => p.id === id);
+    confirmId = null;
+    pendingDeletes.add(id); rebuild(); render();
+    let ok = false;
+    try { const r = await post({ action: 'delete', id }); ok = r.ok || r.error === 'not_found'; } catch (e) {}
+    pendingDeletes.delete(id);
+    if (ok) { listErr.textContent = ''; keepServerList(serverList.filter(p => p.id !== id)); return; }
+    listErr.textContent = MSG.delete_failed + (gone ? ` (${gone.name})` : '');
+    rebuild(); render();
   }
 
   function say(text, ok){ err.textContent = text; err.classList.toggle('ok', !!ok); }
@@ -595,24 +616,29 @@ const CANDIDATES = [
     if (!KINDS.includes(kind)) return fail('bad_kind');
     if (!API_URL) return fail('no_api');
 
-    btn.disabled = true; btn.textContent = '추가하는 중…'; say('');
-    try {
-      const r = await post({ action: 'add', name, kind, link, memo, addedBy });
-      if (r.ok) {
-        save(BY_KEY, addedBy);
-        form.reset();
-        form.elements.kind.value = kind;
-        $('f-by').value = addedBy;
-        await refresh();
-        say(`${kind} 목록에 추가했어요: ${name}`, true);
-      } else {
-        say(MSG[r.error] || MSG.add_failed);
-      }
-    } catch (ex) {
-      say(MSG.add_failed);
-    } finally {
-      btn.disabled = false; btn.textContent = '추가하기';
+    // 누르자마자 목록에 보여 주고, 저장은 뒤에서 한다. 저장이 끝나기 전에도 다음 장소를 추가할 수 있다.
+    const temp = { id: 'tmp-' + Date.now() + Math.random(), createdAt: Date.now(), name, kind, link, memo, addedBy, pending: true };
+    pendingAdds.push(temp);
+    rebuild(); render(); findCoords();
+    save(BY_KEY, addedBy);
+    form.reset();
+    form.elements.kind.value = kind;
+    $('f-by').value = addedBy;
+    say(`${kind} 목록에 넣었어요. 저장하는 중이에요: ${name}`, true);
+    let r = null;
+    try { r = await post({ action: 'add', name, kind, link, memo, addedBy }); } catch (ex) {}
+    pendingAdds = pendingAdds.filter(p => p !== temp);
+    if (r && r.ok && r.place) {
+      keepServerList(serverList.some(p => p.id === r.place.id) ? serverList : serverList.concat(r.place));
+      if (!pendingAdds.length) say(`저장했어요: ${name}`, true);
+      return;
     }
+    rebuild(); render();
+    // 저장하지 못했으면, 입력 칸이 비어 있을 때 방금 쓴 내용을 되돌려 놓아 다시 누를 수 있게 한다.
+    if (!$('f-name').value) {
+      $('f-name').value = name; $('f-link').value = link; $('f-memo').value = memo; form.elements.kind.value = kind;
+    }
+    say((r && MSG[r.error]) || `${MSG.add_failed} (${name})`);
   });
 
   try { const saved = JSON.parse(load(LIST_KEY) || 'null'); if (Array.isArray(saved)) { useList(saved); render(); } } catch (e) {}
