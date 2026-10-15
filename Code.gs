@@ -1,17 +1,19 @@
 /**
  * 제주 가족여행 지도 - "가족이 추가한 곳" 저장 API
  *
- * 시트 `places` 열: id | createdAt | name | kind | link | memo | addedBy
+ * 시트 `places` 열: id | createdAt | name | kind | link | memo | addedBy | lat | lon
+ * lat/lon 은 네이버 지도 링크에서 찾는다. 못 찾으면 lat 에 '-' 를 적어 다시 찾지 않는다.
  * 링크를 아는 가족 누구나 추가·삭제할 수 있다 (비밀번호 없음).
  * 배포: 웹 앱, 실행 계정 "나", 액세스 "모든 사용자".
  */
 
 const SHEET_NAME = 'places';
-const HEADERS = ['id', 'createdAt', 'name', 'kind', 'link', 'memo', 'addedBy'];
+const HEADERS = ['id', 'createdAt', 'name', 'kind', 'link', 'memo', 'addedBy', 'lat', 'lon'];
 const KINDS = ['식당', '카페', '가볼 곳'];
 
 function doGet() {
   try {
+    fillMissingCoords_();
     return json_({ ok: true, places: readAll_() });
   } catch (err) {
     console.error(err);
@@ -63,7 +65,11 @@ function add_(body) {
     link: link,
     memo: memo,
     addedBy: addedBy,
+    lat: '-',
+    lon: '',
   };
+  const c = link ? coordFromLink_(link) : null;
+  if (c) { place.lat = c.lat; place.lon = c.lon; }
   sheet_().appendRow(HEADERS.map(function (h) { return cell_(place[h]); }));
   return json_({ ok: true, place: place });
 }
@@ -91,6 +97,8 @@ function readAll_() {
     .map(function (r) {
       const p = {};
       HEADERS.forEach(function (h, i) { p[h] = h === 'createdAt' ? Number(r[i]) || 0 : String(r[i]); });
+      p.lat = Number(p.lat) || null;
+      p.lon = Number(p.lon) || null;
       return p;
     })
     .sort(function (a, b) { return a.createdAt - b.createdAt; });
@@ -103,8 +111,73 @@ function sheet_() {
   if (sheet.getLastRow() === 0) {
     sheet.appendRow(HEADERS);
     sheet.setFrozenRows(1);
+  } else if (sheet.getLastColumn() < HEADERS.length) {
+    sheet.getRange(1, 1, 1, HEADERS.length).setValues([HEADERS]);
   }
   return sheet;
+}
+
+// 좌표가 아직 없는 줄(lat 칸이 빈 줄)은 목록을 불러올 때 링크에서 찾아 채운다. 한 번에 5줄까지.
+function fillMissingCoords_() {
+  const sheet = sheet_();
+  if (sheet.getLastRow() < 2) return;
+  const rows = sheet.getRange(2, 1, sheet.getLastRow() - 1, HEADERS.length).getValues();
+  const linkCol = HEADERS.indexOf('link'), latCol = HEADERS.indexOf('lat');
+  const todo = [];
+  rows.forEach(function (r, i) { if (r[0] !== '' && r[latCol] === '' && todo.length < 5) todo.push(i); });
+  if (!todo.length) return;
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(5000)) return;
+  try {
+    todo.forEach(function (i) {
+      const link = String(rows[i][linkCol]);
+      const c = link ? coordFromLink_(link) : null;
+      sheet.getRange(i + 2, latCol + 1, 1, 2).setValues([c ? [c.lat, c.lon] : ['-', '']]);
+    });
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+// 네이버 지도 링크에서 좌표를 찾는다.
+// naver.me 짧은 링크는 map.naver.com/?lat=..&lng=.. 으로 넘어가므로 그 주소에서 읽고,
+// 장소 번호만 있는 링크(map.naver.com/p/entry/place/123 등)는 네이버 장소 요약 API를 시도한다.
+function coordFromLink_(link) {
+  try {
+    let url = link;
+    for (let hop = 0; hop < 3; hop++) {
+      const c = coordFromParams_(url);
+      if (c) return c;
+      if (!/^https:\/\/naver\.me\//.test(url)) break;
+      const res = UrlFetchApp.fetch(url, { followRedirects: false, muteHttpExceptions: true });
+      const headers = res.getHeaders();
+      const next = headers.Location || headers.location;
+      if (!next) break;
+      url = next;
+    }
+    const id = (url.match(/place\/(\d+)/) || url.match(/place\.naver\.com\/[a-z]+\/(\d+)/) || url.match(/pinId=(\d+)/) || [])[1];
+    if (!id) return null;
+    const res = UrlFetchApp.fetch('https://map.naver.com/p/api/place/summary/' + id, {
+      muteHttpExceptions: true,
+      headers: { Referer: 'https://map.naver.com/' },
+    });
+    if (res.getResponseCode() !== 200) return null;
+    const co = JSON.parse(res.getContentText()).data.placeDetail.coordinate;
+    return inJeju_(Number(co.latitude), Number(co.longitude));
+  } catch (err) {
+    console.warn('coordFromLink_', link, err);
+    return null;
+  }
+}
+
+function coordFromParams_(url) {
+  const lat = (url.match(/[?&]lat=([\d.]+)/) || [])[1];
+  const lon = (url.match(/[?&]lng=([\d.]+)/) || [])[1];
+  return lat && lon ? inJeju_(Number(lat), Number(lon)) : null;
+}
+
+function inJeju_(lat, lon) {
+  return lat > 33 && lat < 34 && lon > 126 && lon < 127.1 ? { lat: lat, lon: lon } : null;
 }
 
 function str_(v) {

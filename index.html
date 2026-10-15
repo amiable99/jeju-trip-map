@@ -38,6 +38,7 @@ h1{font-family:var(--font-display);font-weight:700;font-size:30px;line-height:1.
 .map svg{display:block;width:100%;height:auto}
 .map text{font-family:var(--font-body);fill:var(--fg)}
 .map .small{fill:var(--muted)}
+.map text.halo{paint-order:stroke;stroke:var(--land);stroke-width:4px;stroke-linejoin:round}
 .map a:focus-visible circle{stroke:var(--fg);stroke-width:3}
 .map a:hover text.name{text-decoration:underline}
 .hint{font-size:13px;color:var(--muted);margin:8px 2px 0}
@@ -71,6 +72,7 @@ form h3{margin:0;font-size:15px}
 @media (max-width:460px){.row{grid-template-columns:1fr}}
 .err{color:var(--stay);font-size:13px;min-height:1em;margin:0}
 .err:empty{display:none}
+.note{font-size:12px;color:var(--muted)}
 .err.ok{color:var(--spot)}
 .kinds{border:0;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;min-width:0}
 .kinds legend{font-size:13px;color:var(--muted);padding:0;margin-bottom:4px}
@@ -152,17 +154,49 @@ form h3{margin:0;font-size:15px}
           <text class="name" x="268" y="546" font-size="15" font-weight="600" text-anchor="end">교래흑돼지 표선점</text>
           <text class="small" x="268" y="564" font-size="12" text-anchor="end">수 휴무</text>
         </a>
+        <g id="local-added"></g>
         <g font-size="12">
           <circle cx="40" cy="40" r="6" style="fill:var(--stay)"/><text x="54" y="44">숙소</text>
           <circle cx="40" cy="62" r="6" style="fill:var(--food)"/><text x="54" y="66">식당</text>
-          <circle cx="40" cy="84" r="6" style="fill:var(--spot)"/><text x="54" y="88">가볼 곳</text>
+          <circle cx="40" cy="84" r="6" style="fill:var(--cafe)"/><text x="54" y="88">카페</text>
+          <circle cx="40" cy="106" r="6" style="fill:var(--spot)"/><text x="54" y="110">가볼 곳</text>
         </g>
         <path d="M620 590 V562 M612 572 L620 562 L628 572" fill="none" style="stroke:var(--fg)" stroke-width="1.5"/>
         <text x="636" y="580" font-size="14" font-weight="600">N</text>
       </svg>
     </div>
-    <p class="hint">지도의 거리는 차로 걸리는 대략적인 시간이에요.</p>
+    <p class="hint">지도의 거리는 차로 걸리는 대략적인 시간이에요. 가족이 추가한 곳도 네이버 지도 링크가 있으면 지도에 함께 표시돼요.</p>
   </div>
+
+  <section>
+    <h2>제주 전체 지도</h2>
+    <div class="map">
+      <!-- 좌표 변환 (viewBox 680×420): x = 21 + (lon - 126.14) * 760, y = 20 + (33.58 - lat) * 910
+           해안선: southkorea-maps (KOSTAT 2013 시도 경계)를 단순화 -->
+      <svg id="island" viewBox="0 0 680 420" role="img" aria-labelledby="it idesc">
+        <title id="it">제주도 전체 지도</title>
+        <desc id="idesc">제주도 전체에서 숙소와 장소의 위치, 그리고 숙소 주변 지도의 범위</desc>
+        <rect width="680" height="420" style="fill:var(--sea)"/>
+        <path d="M642 72 L645 75 L645 77 L648 78 L644 82 L645 84 L651 81 L655 82 L655 85 L652 85 L651 86 L654 97 L653 99 L651 99 L652 103 L651 105 L648 106 L645 103 L643 104 L639 103 L638 104 L638 102 L636 102 L633 101 L634 98 L631 92 L633 88 L631 88 L633 87 L634 84 L637 82 L636 75 L639 73 L642 72 Z M509 35 L520 41 L522 44 L524 44 L525 41 L532 42 L535 39 L545 41 L545 45 L547 50 L546 53 L550 56 L549 59 L552 58 L554 61 L556 60 L556 64 L557 63 L559 65 L564 65 L564 68 L565 67 L569 68 L568 71 L569 72 L573 72 L575 68 L579 67 L580 68 L587 68 L588 70 L594 69 L598 73 L602 72 L603 76 L606 77 L605 79 L602 80 L603 82 L600 85 L606 85 L611 88 L612 94 L609 103 L610 105 L613 105 L614 108 L612 109 L608 108 L606 109 L604 108 L602 113 L603 113 L603 114 L605 116 L607 114 L611 121 L610 118 L613 119 L612 119 L613 120 L614 120 L615 119 L617 120 L616 123 L621 118 L621 120 L619 122 L622 124 L622 120 L627 120 L628 116 L627 121 L629 125 L629 127 L631 130 L634 131 L636 134 L637 134 L636 136 L631 137 L626 132 L623 134 L623 137 L618 143 L620 143 L619 145 L617 145 L617 147 L620 147 L618 152 L619 155 L622 154 L628 159 L627 163 L625 166 L622 166 L617 162 L619 159 L618 156 L613 156 L613 160 L615 160 L614 161 L615 162 L611 168 L609 169 L609 174 L607 176 L607 181 L603 184 L605 184 L604 186 L606 189 L606 195 L585 203 L587 203 L587 206 L580 213 L580 218 L576 220 L577 221 L576 222 L577 228 L573 235 L570 235 L569 239 L568 239 L567 241 L568 240 L567 243 L565 243 L563 246 L561 245 L560 247 L558 247 L557 250 L557 252 L559 253 L560 254 L560 253 L560 254 L562 255 L560 257 L561 260 L558 260 L555 265 L552 268 L551 267 L552 270 L542 273 L539 273 L539 271 L536 272 L535 273 L533 273 L534 275 L531 277 L527 274 L523 276 L520 274 L518 276 L515 275 L514 272 L508 272 L504 277 L499 279 L498 286 L495 286 L491 290 L487 291 L485 296 L478 299 L473 295 L472 297 L466 298 L464 300 L464 298 L462 301 L459 300 L447 305 L435 306 L435 305 L432 305 L431 308 L426 305 L421 305 L419 308 L421 305 L419 301 L417 301 L418 307 L416 305 L415 307 L412 305 L411 308 L410 306 L406 308 L404 310 L404 312 L402 313 L403 317 L400 317 L397 320 L394 319 L393 322 L390 321 L389 325 L387 323 L387 331 L383 333 L383 332 L380 332 L378 335 L376 334 L375 335 L370 336 L365 333 L366 332 L364 331 L364 330 L361 329 L359 331 L355 328 L350 329 L349 332 L347 332 L350 335 L346 337 L347 336 L342 332 L343 329 L341 335 L340 333 L337 334 L335 331 L333 335 L331 333 L329 334 L327 332 L322 335 L312 332 L311 335 L307 338 L307 339 L303 342 L294 344 L293 341 L287 342 L284 345 L280 345 L280 348 L278 349 L274 348 L271 345 L266 340 L265 335 L259 332 L254 334 L253 337 L250 335 L248 337 L246 340 L244 340 L243 338 L238 336 L235 331 L229 329 L223 330 L222 332 L219 333 L208 340 L205 339 L205 341 L203 340 L197 343 L196 341 L194 341 L192 340 L191 336 L191 337 L188 338 L188 336 L182 338 L178 336 L170 338 L172 336 L169 336 L170 334 L167 332 L159 334 L156 336 L156 340 L153 340 L151 344 L149 345 L150 344 L149 343 L149 345 L148 344 L146 345 L141 350 L142 352 L137 364 L140 366 L141 372 L136 374 L134 372 L133 369 L129 370 L127 369 L126 373 L121 374 L114 370 L115 364 L117 364 L116 360 L114 359 L113 361 L112 359 L111 362 L108 356 L105 357 L103 350 L98 348 L98 345 L95 343 L95 341 L93 337 L89 336 L89 334 L83 330 L77 332 L68 327 L62 321 L62 320 L58 318 L53 313 L51 307 L45 301 L44 295 L38 291 L37 283 L38 281 L42 279 L39 270 L41 268 L42 261 L42 258 L39 256 L39 249 L38 248 L38 243 L42 241 L41 239 L43 236 L49 234 L50 235 L52 235 L51 233 L53 229 L52 224 L58 220 L64 219 L66 217 L68 218 L72 214 L72 211 L80 206 L77 203 L84 198 L85 195 L88 195 L88 194 L91 192 L94 196 L95 191 L99 191 L99 186 L102 184 L104 186 L106 185 L105 181 L106 178 L111 177 L109 175 L108 172 L111 175 L114 171 L116 172 L113 166 L112 171 L108 171 L111 171 L112 163 L115 163 L114 160 L115 158 L114 155 L115 153 L121 151 L123 151 L124 153 L125 149 L126 149 L127 146 L131 147 L131 146 L133 145 L136 147 L137 143 L138 143 L138 147 L139 144 L144 144 L149 139 L148 137 L152 132 L150 126 L154 123 L160 125 L165 123 L166 125 L168 124 L171 126 L174 125 L175 122 L179 121 L180 119 L182 120 L184 119 L185 116 L187 115 L196 115 L202 110 L202 109 L205 110 L209 105 L213 105 L216 110 L220 111 L221 109 L226 109 L225 108 L226 108 L228 105 L234 105 L236 101 L239 99 L244 101 L245 99 L247 100 L254 97 L258 97 L259 98 L261 95 L260 94 L262 92 L263 93 L266 91 L268 93 L268 88 L269 90 L271 90 L269 88 L271 87 L279 87 L280 86 L280 87 L283 85 L285 79 L291 76 L295 77 L297 79 L306 81 L309 78 L317 79 L326 68 L330 71 L330 74 L333 74 L333 77 L335 77 L341 75 L343 70 L346 73 L348 71 L352 73 L351 71 L353 69 L360 71 L363 66 L370 61 L375 64 L376 62 L380 62 L381 60 L388 61 L389 59 L390 60 L393 58 L394 61 L397 62 L398 60 L397 57 L398 55 L401 54 L400 50 L402 50 L405 44 L411 46 L409 50 L411 50 L412 47 L414 48 L416 48 L417 52 L418 53 L419 52 L422 56 L424 54 L425 55 L428 54 L429 48 L432 47 L433 47 L435 50 L439 50 L441 47 L444 48 L446 47 L452 47 L459 45 L460 46 L462 42 L470 40 L471 38 L471 40 L474 41 L476 42 L478 40 L476 42 L479 45 L480 44 L478 43 L479 42 L484 41 L485 40 L486 42 L493 42 L495 41 L495 36 L498 35 L504 35 L506 37 L509 35 Z" style="fill:var(--land);stroke:var(--coast)" stroke-width="1.2" stroke-linejoin="round"/>
+        <path d="M306 232 Q320 196 334 232 Z" style="fill:var(--oreum)"/>
+        <g class="small" font-size="15" text-anchor="middle">
+          <text class="halo" x="320" y="252">한라산</text>
+          <text class="halo" x="289" y="108">제주공항</text>
+          <text class="halo" x="340" y="306">서귀포</text>
+          <text class="halo" x="228" y="306">중문</text>
+          <text class="halo" x="119" y="180">한림</text>
+          <text class="halo" x="626" y="112">성산</text>
+        </g>
+        <circle cx="289" cy="87" r="4" style="fill:var(--muted)"/>
+        <rect x="450" y="123" width="207" height="184" rx="4" fill="none" style="stroke:var(--muted)" stroke-width="1.2" stroke-dasharray="5 4"/>
+        <text class="small" x="553" y="326" font-size="14" text-anchor="middle">숙소 주변 지도 범위</text>
+        <g id="island-points"></g>
+        <path d="M36 405 V378 M28 388 L36 378 L44 388" fill="none" style="stroke:var(--fg)" stroke-width="1.5"/>
+        <text x="50" y="398" font-size="14" font-weight="600">N</text>
+      </svg>
+    </div>
+    <p class="hint">점선 네모 안이 위의 숙소 주변 지도예요. 점을 누르면 네이버 지도가 열려요.</p>
+  </section>
 
   <section>
     <h2><span class="dot" style="background:var(--stay)"></span>숙소</h2>
@@ -242,6 +276,7 @@ form h3{margin:0;font-size:15px}
       <div class="field">
         <label for="f-link">네이버 지도 링크 (선택)</label>
         <input id="f-link" name="link" inputmode="url" placeholder="https://naver.me/..." autocomplete="off">
+        <span class="note">네이버 지도 앱에서 <b>공유 → 링크 복사</b>한 주소를 넣으면 지도에도 표시돼요.</span>
       </div>
       <div class="field">
         <label for="f-memo">메모 (선택)</label>
@@ -308,6 +343,82 @@ const CANDIDATES = [
 
   const $ = id => document.getElementById(id);
   const listErr = $('list-err'), cafeEmpty = $('cafe-empty');
+
+  // 지도에 찍는 고정 장소. 카드와 숙소 주변 지도(SVG)에 적힌 곳과 같다.
+  const FIXED = [
+    { name: '숙소', kind: '숙소', lat: 33.3534398, lon: 126.8381905, link: 'https://map.naver.com/p/entry/place/1994847753' },
+    { name: '한라산아래첫마을', kind: '식당', lat: 33.3243352, lon: 126.8411500, link: 'https://m.place.naver.com/restaurant/1013614405' },
+    { name: '교래흑돼지', kind: '식당', lat: 33.3301299, lon: 126.8208621, link: 'https://naver.me/xiLeBqEc' },
+    { name: '당케올레국수', kind: '식당', lat: 33.3253355, lon: 126.8431227, link: 'https://naver.me/GDQRfCbl' },
+    { name: '표선삼춘네생솥뚜껑', kind: '식당', lat: 33.3248443, lon: 126.8330871, link: 'https://naver.me/FnsZdV7V' },
+    { name: '따라비오름', kind: '가볼 곳', lat: 33.3870582, lon: 126.7534582, link: 'https://naver.me/x7eIQLMG', label: true },
+    { name: '빛의 벙커', kind: '가볼 곳', lat: 33.4399386, lon: 126.8990193, link: 'https://naver.me/GKIP2zqi', label: true },
+  ];
+  const COLOR = { '숙소': 'var(--stay)', '식당': 'var(--food)', '카페': 'var(--cafe)', '가볼 곳': 'var(--spot)' };
+  const localXY = (lat, lon) => [40 + (lon - 126.72) * 2500, 50 + (33.45 - lat) * 2975];
+  const islandXY = (lat, lon) => [21 + (lon - 126.14) * 760, 20 + (33.58 - lat) * 910];
+  const inLocal = ([x, y]) => x > 12 && x < 668 && y > 12 && y < 588;
+  const SVG_NS = 'http://www.w3.org/2000/svg';
+
+  function svgEl(tag, attrs, text){
+    const n = document.createElementNS(SVG_NS, tag);
+    for (const k in attrs) n.setAttribute(k, attrs[k]);
+    if (text != null) n.textContent = text;
+    return n;
+  }
+
+  function short(name){ return name.length > 10 ? name.slice(0, 9) + '…' : name; }
+
+  const overlaps = (a, b) => a.x < b.x + b.width + 2 && b.x < a.x + a.width + 2 && a.y < b.y + b.height + 2 && b.y < a.y + a.height + 2;
+
+  // 점 하나(와 이름). 링크가 있으면 눌러서 네이버 지도로 간다.
+  // 이름은 오른쪽·왼쪽·위·아래 중 다른 글자나 점과 겹치지 않는 자리에 두고, 자리가 없으면 점만 찍는다.
+  function pin(parent, [x, y], p, r, label, fontSize, taken){
+    const link = safeLink(p.link);
+    const g = link ? svgEl('a', { href: link, target: '_blank', rel: 'noopener' }) : svgEl('g', {});
+    g.appendChild(svgEl('circle', { cx: x, cy: y, r, style: `fill:${COLOR[p.kind] || COLOR['가볼 곳']};stroke:var(--surface)`, 'stroke-width': 2 }));
+    parent.appendChild(g);
+    if (!label) return;
+    const t = svgEl('text', { class: 'name halo', 'font-size': fontSize, 'font-weight': 600 }, short(label));
+    g.appendChild(t);
+    const spots = [
+      [x + r + 5, y + fontSize * 0.35, 'start'], [x - r - 5, y + fontSize * 0.35, 'end'],
+      [x, y - r - 6, 'middle'], [x, y + r + fontSize, 'middle'],
+    ];
+    const vb = parent.ownerSVGElement.viewBox.baseVal;
+    const fits = b => b.x >= 4 && b.y >= 4 && b.x + b.width <= vb.width - 4 && b.y + b.height <= vb.height - 4 && !taken.some(o => overlaps(b, o));
+    const spot = spots.find(([tx, ty, anchor]) => {
+      t.setAttribute('x', tx); t.setAttribute('y', ty); t.setAttribute('text-anchor', anchor);
+      return fits(t.getBBox());
+    });
+    if (spot) taken.push(t.getBBox()); else t.remove();
+  }
+
+  // 지도에 이미 그려진 글자와 점의 자리 (새 이름이 피해 갈 곳)
+  function takenBoxes(layer){
+    return [...layer.ownerSVGElement.querySelectorAll('text, circle')]
+      .filter(n => !layer.contains(n) && !n.closest('title, desc'))
+      .map(n => n.getBBox());
+  }
+
+  // 점을 모두 자리로 잡아 둔 뒤 이름을 붙여야, 이름이 나중에 찍힐 점을 가리지 않는다.
+  function draw(layer, items){
+    const taken = takenBoxes(layer);
+    for (const { xy: [x, y], r } of items) taken.push({ x: x - r, y: y - r, width: 2 * r, height: 2 * r });
+    for (const d of items) pin(layer, d.xy, d.p, d.r, d.label, d.size, taken);
+  }
+
+  function drawMaps(){
+    const added = places.filter(p => p.lat && p.lon);
+    const local = $('local-added'), island = $('island-points');
+    local.replaceChildren(); island.replaceChildren();
+    draw(local, added.map(p => ({ p, xy: localXY(p.lat, p.lon), r: 7, label: p.name, size: 14 })).filter(d => inLocal(d.xy)));
+    draw(island, [
+      ...FIXED.map(p => ({ p, xy: islandXY(p.lat, p.lon), r: p.kind === '숙소' ? 8 : 5, label: p.kind === '숙소' || p.label ? p.name : null, size: 16 })),
+      // 숙소 주변 지도에 이미 이름이 나오는 곳은 전체 지도에서는 점만 찍는다.
+      ...added.map(p => ({ p, xy: islandXY(p.lat, p.lon), r: 6, label: inLocal(localXY(p.lat, p.lon)) ? null : p.name, size: 15 })),
+    ]);
+  }
   const form = $('add-form'), err = $('f-err'), btn = $('f-submit');
 
   function load(k){ try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } }
@@ -363,6 +474,7 @@ const CANDIDATES = [
       card.appendChild(el('span', 'name', p.name || ''));
       const meta = el('span', 'meta');
       if (p.memo) meta.appendChild(el('span', null, p.memo));
+      if (p.link && !(p.lat && p.lon)) meta.appendChild(el('span', 'by', '지도 위치를 못 찾았어요'));
       meta.appendChild(el('span', 'by', '추가: ' + (p.addedBy || '가족')));
       card.appendChild(meta);
       const link = safeLink(p.link);
@@ -390,6 +502,7 @@ const CANDIDATES = [
       card.appendChild(acts);
       list.appendChild(card);
     }
+    drawMaps();
   }
 
   async function remove(id){
