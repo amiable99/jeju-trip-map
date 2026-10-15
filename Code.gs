@@ -142,7 +142,9 @@ function fillMissingCoords_() {
 // 네이버 지도 링크에서 좌표를 찾는다.
 // naver.me 짧은 링크는 map.naver.com/?lat=..&lng=.. 으로 넘어가므로 그 주소에서 읽고,
 // 장소 번호만 있는 링크(map.naver.com/p/entry/place/123 등)는 네이버 장소 요약 API를 시도한다.
-function coordFromLink_(link) {
+// log 를 넘기면 단계마다 무엇을 받았는지 적는다 (checkCoords 에서 씀).
+function coordFromLink_(link, log) {
+  log = log || function () {};
   try {
     let url = link;
     for (let hop = 0; hop < 3; hop++) {
@@ -152,22 +154,52 @@ function coordFromLink_(link) {
       const res = UrlFetchApp.fetch(url, { followRedirects: false, muteHttpExceptions: true });
       const headers = res.getHeaders();
       const next = headers.Location || headers.location;
-      if (!next) break;
+      log('fetch ' + url + ' -> ' + res.getResponseCode() + ' Location=' + next);
+      if (!next) {
+        const body = res.getContentText();
+        log('body: ' + body.slice(0, 300));
+        const c2 = coordFromParams_(body) || coordFromText_(body);
+        if (c2) return c2;
+        break;
+      }
       url = next;
     }
     const id = (url.match(/place\/(\d+)/) || url.match(/place\.naver\.com\/[a-z]+\/(\d+)/) || url.match(/pinId=(\d+)/) || [])[1];
+    log('place id: ' + id);
     if (!id) return null;
     const res = UrlFetchApp.fetch('https://map.naver.com/p/api/place/summary/' + id, {
       muteHttpExceptions: true,
       headers: { Referer: 'https://map.naver.com/' },
     });
+    log('summary -> ' + res.getResponseCode() + ' ' + res.getContentText().slice(0, 200));
     if (res.getResponseCode() !== 200) return null;
     const co = JSON.parse(res.getContentText()).data.placeDetail.coordinate;
     return inJeju_(Number(co.latitude), Number(co.longitude));
   } catch (err) {
+    log('error: ' + err);
     console.warn('coordFromLink_', link, err);
     return null;
   }
+}
+
+// 편집기에서 직접 실행하는 점검용 함수: 위치를 못 찾은 줄을 다시 찾고, 단계별 결과를 실행 로그에 남긴다.
+function checkCoords() {
+  const sheet = sheet_();
+  if (sheet.getLastRow() < 2) { console.log('시트에 장소가 없어요.'); return; }
+  const latCol = HEADERS.indexOf('lat') + 1;
+  const range = sheet.getRange(2, latCol, sheet.getLastRow() - 1, 1);
+  range.setValues(range.getValues().map(function (r) { return [r[0] === '-' ? '' : r[0]]; }));
+  console.log('시험: ' + JSON.stringify(coordFromLink_('https://naver.me/GDQRfCbl', function (m) { console.log(m); })));
+  fillMissingCoords_();
+  readAll_().forEach(function (p) { console.log(p.name + ': ' + p.lat + ', ' + p.lon); });
+}
+
+// 글 안에 "y":"33.3","x":"126.8" 처럼 좌표가 들어 있으면 읽는다.
+function coordFromText_(text) {
+  const m = text.match(/"y"\s*:\s*"?(3[3-4]\.\d+)"?\s*,\s*"x"\s*:\s*"?(12[6-7]\.\d+)/) ||
+    text.match(/"x"\s*:\s*"?(12[6-7]\.\d+)"?\s*,\s*"y"\s*:\s*"?(3[3-4]\.\d+)/);
+  if (!m) return null;
+  return m[1].indexOf('12') === 0 ? inJeju_(Number(m[2]), Number(m[1])) : inJeju_(Number(m[1]), Number(m[2]));
 }
 
 function coordFromParams_(url) {
