@@ -334,12 +334,22 @@ form h3{margin:0;font-size:15px}
     { name: '제주공항 근처', sub: '바람이 세면 항공편이 늦어질 수 있어요', lat: 33.5104, lon: 126.4930, airport: true },
     { name: '표선면', sub: '숙소', lat: 33.3534, lon: 126.8382 },
   ];
-  const KEY = 'jejuTrip.weather', MAX_AGE = 30 * 60 * 1000;
+  const KEY = 'jejuTrip.weather2', MAX_AGE = 30 * 60 * 1000;
+
+  // 여행은 금~월. 오늘이 금~월이면 이번 금~월, 아니면 다가오는 금~월 네 날만 보여 준다 (제주 시간 기준).
+  const seoulToday = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
+  const back = { 5: 0, 6: 1, 0: 2, 1: 3 }[seoulToday.getDay()];
+  const fri = new Date(seoulToday);
+  fri.setDate(fri.getDate() + (back !== undefined ? -back : (5 - fri.getDay())));
+  const ymd = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  const mon = new Date(fri); mon.setDate(fri.getDate() + 3);
+  const TODAY = ymd(seoulToday), START = ymd(fri), END = ymd(mon);
+
   const URL = 'https://api.open-meteo.com/v1/forecast'
     + '?latitude=' + PLACES.map(p => p.lat).join(',') + '&longitude=' + PLACES.map(p => p.lon).join(',')
     + '&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,wind_gusts_10m'
     + '&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max'
-    + '&timezone=Asia%2FSeoul&forecast_days=4&wind_speed_unit=ms';
+    + '&timezone=Asia%2FSeoul&start_date=' + START + '&end_date=' + END + '&wind_speed_unit=ms';
   const box = document.getElementById('weather'), at = document.getElementById('weather-at');
 
   // WMO 날씨 코드 → [그림, 말]
@@ -365,11 +375,10 @@ form h3{margin:0;font-size:15px}
     return n;
   }
 
-  function dayLabel(iso, i){
-    if (i === 0) return '오늘';
-    if (i === 1) return '내일';
-    const d = new Date(iso + 'T00:00:00+09:00');
-    return `${d.getMonth() + 1}/${d.getDate()}(${'일월화수목금토'[d.getDay()]})`;
+  function dayLabel(iso){
+    const [, m, d] = iso.split('-').map(Number);
+    const wd = '일월화수목금토'[new Date(iso + 'T12:00:00Z').getUTCDay()];
+    return iso === TODAY ? `오늘(${wd})` : `${m}/${d}(${wd})`;
   }
 
   function render(list, fetchedAt){
@@ -395,7 +404,7 @@ form h3{margin:0;font-size:15px}
         const [di, dw] = sky(d.weather_code[i]);
         const day = el('div', 'wx-day');
         const icon = el('span', 'i', di); icon.title = dw;
-        day.append(el('span', 'd', dayLabel(t, i)), icon,
+        day.append(el('span', 'd', dayLabel(t)), icon,
           el('span', 't', `${Math.round(d.temperature_2m_max[i])}° / ${Math.round(d.temperature_2m_min[i])}°`),
           el('span', 'r', `비 ${d.precipitation_probability_max[i] ?? 0}%`));
         days.appendChild(day);
@@ -404,11 +413,13 @@ form h3{margin:0;font-size:15px}
       box.appendChild(card);
     });
     const t = new Date(fetchedAt);
-    at.textContent = `${t.getHours()}:${String(t.getMinutes()).padStart(2, '0')}에 받은 예보예요 · Open-Meteo`;
+    const md = iso => iso.slice(5).replace('-', '/').replace(/^0/, '').replace('/0', '/');
+    at.textContent = `여행 기간 금~월(${md(START)}~${md(END)}) 예보 · ${t.getHours()}:${String(t.getMinutes()).padStart(2, '0')}에 받음 · Open-Meteo`;
   }
 
   let saved = null;
   try { saved = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) {}
+  if (saved && saved.start !== START) saved = null;
   if (saved && Array.isArray(saved.list)) render(saved.list, saved.at);
   if (saved && Date.now() - saved.at < MAX_AGE) return;
   fetch(URL)
@@ -418,7 +429,7 @@ form h3{margin:0;font-size:15px}
       if (!list.every(w => w.current && w.daily)) throw new Error('bad');
       const now = Date.now();
       render(list, now);
-      try { localStorage.setItem(KEY, JSON.stringify({ at: now, list })); } catch (e) {}
+      try { localStorage.setItem(KEY, JSON.stringify({ at: now, start: START, list })); } catch (e) {}
     })
     .catch(() => { if (!saved) box.replaceChildren(el('p', 'note', '날씨를 불러오지 못했어요. 잠시 후 새로고침해 주세요.')); });
 })();
