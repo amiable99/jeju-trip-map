@@ -13,7 +13,7 @@
 :root{
   --bg:#F3F5F1; --surface:#FFFFFF; --fg:#1F2622; --muted:#5E6A63; --line:#D9DFDA;
   --land:#DCE8CF; --sea:#CFE2F0; --coast:#7FA9CC; --oreum:#A9C48B;
-  --stay:#C2491D; --food:#E08A1E; --spot:#2E7D6B;
+  --stay:#C2491D; --food:#E08A1E; --cafe:#8C5A3C; --spot:#2E7D6B;
   --font-display:"Gowun Batang", "Nanum Myeongjo", serif;
   --font-body:"IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
   color-scheme:light;
@@ -21,11 +21,11 @@
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#151A18; --surface:#1E2522; --fg:#E7ECE8; --muted:#9AA79F; --line:#2E3833;
   --land:#24331F; --sea:#16283A; --coast:#3F6A90; --oreum:#3D5A2C;
-  --stay:#F07A4E; --food:#F2A94A; --spot:#4FB89E; color-scheme:dark}}
+  --stay:#F07A4E; --food:#F2A94A; --cafe:#C9997A; --spot:#4FB89E; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#151A18; --surface:#1E2522; --fg:#E7ECE8; --muted:#9AA79F; --line:#2E3833;
   --land:#24331F; --sea:#16283A; --coast:#3F6A90; --oreum:#3D5A2C;
-  --stay:#F07A4E; --food:#F2A94A; --spot:#4FB89E; color-scheme:dark}
+  --stay:#F07A4E; --food:#F2A94A; --cafe:#C9997A; --spot:#4FB89E; color-scheme:dark}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:15px;line-height:1.6;-webkit-text-size-adjust:100%}
 [hidden]{display:none!important}
@@ -71,6 +71,16 @@ form h3{margin:0;font-size:15px}
 @media (max-width:460px){.row{grid-template-columns:1fr}}
 .err{color:var(--stay);font-size:13px;min-height:1em;margin:0}
 .err:empty{display:none}
+.err.ok{color:var(--spot)}
+.kinds{border:0;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;min-width:0}
+.kinds legend{font-size:13px;color:var(--muted);padding:0;margin-bottom:4px}
+.kind{position:relative;min-width:0}
+.kind input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.kind span{display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 4px;border:1px solid var(--line);border-radius:8px;background:var(--bg);font-size:15px;font-weight:500;white-space:nowrap}
+.kind i{width:9px;height:9px;border-radius:50%;background:var(--k);flex:none}
+.kind input:checked + span{border-color:var(--k);box-shadow:inset 0 0 0 1px var(--k);background:var(--surface);font-weight:600}
+.kind input:focus-visible + span{outline:2px solid var(--fg);outline-offset:2px}
+.card.added .by{font-weight:500}
 .submit{align-self:flex-start;font:inherit;font-weight:600;font-size:15px;padding:10px 18px;border:0;border-radius:8px;background:var(--spot);color:var(--surface);cursor:pointer}
 .submit:disabled{opacity:.6;cursor:default}
 .submit:focus-visible,.linkbtn:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
@@ -166,8 +176,8 @@ form h3{margin:0;font-size:15px}
   </section>
 
   <section>
-    <h2><span class="dot" style="background:var(--food)"></span>식당 <span class="sub" style="font-family:var(--font-body);font-size:13px;font-weight:400">모두 표선 읍내, 숙소에서 5~10분</span></h2>
-    <div class="list">
+    <h2><span class="dot" style="background:var(--food)"></span>식당 <span class="sub" style="font-family:var(--font-body);font-size:13px;font-weight:400">추천 4곳은 표선 읍내, 숙소에서 5~10분</span></h2>
+    <div class="list" id="list-식당">
       <a class="card" href="https://m.place.naver.com/restaurant/1013614405" target="_blank" rel="noopener">
         <span class="name">한라산아래첫마을 제주민속촌점</span>
         <span class="meta"><span>메밀국수</span><span class="closed">화요일 휴무</span><span class="tag">10:00–18:00</span></span>
@@ -192,8 +202,15 @@ form h3{margin:0;font-size:15px}
   </section>
 
   <section>
+    <h2><span class="dot" style="background:var(--cafe)"></span>카페</h2>
+    <div class="list" id="list-카페">
+      <p class="added-empty" id="cafe-empty">아직 없어요. 괜찮은 카페를 찾으면 아래에서 추가해 주세요.</p>
+    </div>
+  </section>
+
+  <section>
     <h2><span class="dot" style="background:var(--spot)"></span>가볼 곳</h2>
-    <div class="list">
+    <div class="list" id="list-가볼 곳">
       <a class="card" href="https://naver.me/x7eIQLMG" target="_blank" rel="noopener">
         <span class="name">따라비오름</span>
         <span class="meta"><span>가시리 · 차로 15~20분</span><span>10월 억새 절정, 정상까지 약 30분</span></span>
@@ -207,27 +224,20 @@ form h3{margin:0;font-size:15px}
     </div>
   </section>
 
-  <section id="added">
-    <h2><span class="dot" style="background:var(--muted)"></span>가족이 추가한 곳</h2>
+  <section id="add">
+    <h2>찾은 곳 추가하기</h2>
+    <p class="sub" style="font-size:14px">종류를 고르면 위의 식당·카페·가볼 곳 목록에 함께 보여요.</p>
     <p class="err" id="list-err" role="alert"></p>
-    <div class="list" id="added-list">
-      <p class="added-empty" id="added-empty">불러오는 중이에요…</p>
-    </div>
     <form id="add-form" novalidate>
-      <h3>찾은 곳 추가하기</h3>
-      <div class="row">
-        <div class="field">
-          <label for="f-name">장소 이름</label>
-          <input id="f-name" name="name" maxlength="60" placeholder="예: 표선 바닷가 카페" autocomplete="off">
-        </div>
-        <div class="field">
-          <label for="f-kind">종류</label>
-          <select id="f-kind" name="kind">
-            <option value="식당">식당</option>
-            <option value="카페">카페</option>
-            <option value="가볼 곳">가볼 곳</option>
-          </select>
-        </div>
+      <fieldset class="kinds">
+        <legend>종류</legend>
+        <label class="kind" style="--k:var(--food)"><input type="radio" name="kind" value="식당" checked><span><i></i>식당</span></label>
+        <label class="kind" style="--k:var(--cafe)"><input type="radio" name="kind" value="카페"><span><i></i>카페</span></label>
+        <label class="kind" style="--k:var(--spot)"><input type="radio" name="kind" value="가볼 곳"><span><i></i>가볼 곳</span></label>
+      </fieldset>
+      <div class="field">
+        <label for="f-name">장소 이름</label>
+        <input id="f-name" name="name" maxlength="60" placeholder="예: 돌집식당" autocomplete="off">
       </div>
       <div class="field">
         <label for="f-link">네이버 지도 링크 (선택)</label>
@@ -297,7 +307,7 @@ const CANDIDATES = [
   };
 
   const $ = id => document.getElementById(id);
-  const listEl = $('added-list'), emptyEl = $('added-empty'), listErr = $('list-err');
+  const listErr = $('list-err'), cafeEmpty = $('cafe-empty');
   const form = $('add-form'), err = $('f-err'), btn = $('f-submit');
 
   function load(k){ try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } }
@@ -306,6 +316,7 @@ const CANDIDATES = [
   let places = [];
   let confirmId = null;
   let busyId = null;
+  let delErr = null;
 
   $('f-by').value = load(BY_KEY);
 
@@ -343,14 +354,14 @@ const CANDIDATES = [
   }
 
   function render(){
-    listEl.querySelectorAll('.card.added').forEach(n => n.remove());
-    emptyEl.textContent = '아직 추가된 곳이 없어요. 가고 싶은 식당이나 카페, 가볼 곳을 찾으면 아래에서 추가해 주세요.';
-    emptyEl.hidden = places.length > 0;
+    // 가족이 추가한 곳은 고른 종류(식당·카페·가볼 곳)의 목록 끝에 붙인다.
+    document.querySelectorAll('.card.added').forEach(n => n.remove());
+    cafeEmpty.hidden = places.some(p => p.kind === '카페');
     for (const p of places) {
+      const list = $('list-' + p.kind) || $('list-가볼 곳');
       const card = el('div', 'card added');
       card.appendChild(el('span', 'name', p.name || ''));
       const meta = el('span', 'meta');
-      meta.appendChild(el('span', null, p.kind || ''));
       if (p.memo) meta.appendChild(el('span', null, p.memo));
       meta.appendChild(el('span', 'by', '추가: ' + (p.addedBy || '가족')));
       card.appendChild(meta);
@@ -369,14 +380,15 @@ const CANDIDATES = [
         no.type = 'button'; no.disabled = busyId === p.id;
         no.onclick = () => { confirmId = null; render(); };
         acts.append(el('span', 'by', '지울까요?'), yes, no);
+        if (delErr && delErr.id === p.id) acts.appendChild(el('span', 'err', delErr.msg));
       } else {
         const del = el('button', 'linkbtn', '삭제');
         del.type = 'button';
-        del.onclick = () => { confirmId = p.id; listErr.textContent = ''; render(); };
+        del.onclick = () => { confirmId = p.id; delErr = null; render(); };
         acts.appendChild(del);
       }
       card.appendChild(acts);
-      listEl.appendChild(card);
+      list.appendChild(card);
     }
   }
 
@@ -386,49 +398,52 @@ const CANDIDATES = [
       const r = await post({ action: 'delete', id });
       if (r.ok || r.error === 'not_found') {
         confirmId = null;
-        listErr.textContent = '';
+        delErr = null;
         busyId = null;
         await refresh();
         return;
       }
-      listErr.textContent = MSG[r.error] || MSG.delete_failed;
+      delErr = { id, msg: MSG[r.error] || MSG.delete_failed };
     } catch (e) {
-      listErr.textContent = MSG.delete_failed;
+      delErr = { id, msg: MSG.delete_failed };
     }
     busyId = null; render();
   }
 
-  ['f-name', 'f-link', 'f-memo', 'f-by'].forEach(id => $(id).addEventListener('input', () => { err.textContent = ''; }));
+  function say(text, ok){ err.textContent = text; err.classList.toggle('ok', !!ok); }
+  form.addEventListener('input', () => say(''));
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const name = $('f-name').value.trim();
-    const kind = $('f-kind').value;
+    const kind = form.elements.kind.value;
     const link = $('f-link').value.trim();
     const memo = $('f-memo').value.trim();
     const addedBy = $('f-by').value.trim();
-    const fail = (code, field) => { err.textContent = MSG[code]; if (field) $(field).focus(); };
+    const fail = (code, field) => { say(MSG[code]); if (field) $(field).focus(); };
     if (!name) return fail('name_required', 'f-name');
     if (name.length > 60) return fail('name_too_long', 'f-name');
     if (link && !safeLink(link)) return fail('bad_link', 'f-link');
     if (memo.length > 200) return fail('memo_too_long', 'f-memo');
     if (addedBy.length > 20) return fail('by_too_long', 'f-by');
-    if (!KINDS.includes(kind)) return fail('bad_kind', 'f-kind');
+    if (!KINDS.includes(kind)) return fail('bad_kind');
     if (!API_URL) return fail('no_api');
 
-    btn.disabled = true; btn.textContent = '추가하는 중…'; err.textContent = '';
+    btn.disabled = true; btn.textContent = '추가하는 중…'; say('');
     try {
       const r = await post({ action: 'add', name, kind, link, memo, addedBy });
       if (r.ok) {
         save(BY_KEY, addedBy);
         form.reset();
+        form.elements.kind.value = kind;
         $('f-by').value = addedBy;
         await refresh();
+        say(`${kind} 목록에 추가했어요: ${name}`, true);
       } else {
-        err.textContent = MSG[r.error] || MSG.add_failed;
+        say(MSG[r.error] || MSG.add_failed);
       }
     } catch (ex) {
-      err.textContent = MSG.add_failed;
+      say(MSG.add_failed);
     } finally {
       btn.disabled = false; btn.textContent = '추가하기';
     }
