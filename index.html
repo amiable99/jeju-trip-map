@@ -330,11 +330,13 @@ form h3{margin:0;font-size:15px}
 // 날씨: Open-Meteo (무료, 키 없음). 30분 동안은 이 휴대폰에 저장해 둔 값을 쓴다.
 (function(){
   const PLACES = [
-    { name: '제주도', sub: '제주시 기준', lat: 33.4996, lon: 126.5312 },
-    { name: '제주공항 근처', sub: '바람이 세면 항공편이 늦어질 수 있어요', lat: 33.5104, lon: 126.4930, airport: true },
-    { name: '표선면', sub: '숙소', lat: 33.3534, lon: 126.8382 },
+    // days: 보여 줄 요일 (0=일 … 5=금, 6=토, 1=월). 공항은 비행기 타는 금·토·월만.
+    { name: '제주도', sub: '제주시 기준', lat: 33.4996, lon: 126.5312, days: [5, 6, 0, 1] },
+    { name: '서울', sub: '김포공항 기준 · 비행기 타는 날', lat: 37.5583, lon: 126.7906, days: [5, 6, 1], airport: true },
+    { name: '제주공항 근처', sub: '비행기 타는 날 · 바람이 세면 늦어질 수 있어요', lat: 33.5104, lon: 126.4930, days: [5, 6, 1], airport: true },
+    { name: '표선면', sub: '숙소', lat: 33.3534, lon: 126.8382, days: [5, 6, 0, 1] },
   ];
-  const KEY = 'jejuTrip.weather2', MAX_AGE = 30 * 60 * 1000;
+  const KEY = 'jejuTrip.weather3', MAX_AGE = 30 * 60 * 1000;
 
   // 여행은 금~월. 오늘이 금~월이면 이번 금~월, 아니면 다가오는 금~월 네 날만 보여 준다 (제주 시간 기준).
   const seoulToday = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
@@ -400,7 +402,10 @@ form h3{margin:0;font-size:15px}
         card.appendChild(el('div', 'wx-warn', '바람이 강해요. 비행기 타는 날이면 항공사 운항 정보를 확인하세요.'));
       }
       const days = el('div', 'wx-days');
+      const weekday = iso => new Date(iso + 'T12:00:00Z').getUTCDay();
+      days.style.gridTemplateColumns = `repeat(${place.days.length}, 1fr)`;
       d.time.forEach((t, i) => {
+        if (!place.days.includes(weekday(t))) return;
         const [di, dw] = sky(d.weather_code[i]);
         const day = el('div', 'wx-day');
         const icon = el('span', 'i', di); icon.title = dw;
