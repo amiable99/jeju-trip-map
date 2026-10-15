@@ -113,12 +113,6 @@ form h3{margin:0;font-size:15px}
     <p class="sub">숙소 기준으로 식당과 가볼 만한 곳을 모았어요. 지도나 목록에서 이름을 누르면 네이버 지도가 열려요.</p>
   </header>
 
-  <section id="weather-section">
-    <h2>날씨</h2>
-    <div class="weather" id="weather"><p class="note">날씨를 불러오는 중이에요…</p></div>
-    <p class="hint" id="weather-at" style="margin:0"></p>
-  </section>
-
   <div>
     <div class="map">
       <!-- 좌표 변환 (viewBox 680×600): x = 40 + (lon - 126.72) * 2500, y = 50 + (33.45 - lat) * 2975
@@ -321,6 +315,12 @@ form h3{margin:0;font-size:15px}
       <p class="err" id="f-err" role="alert"></p>
       <button class="submit" id="f-submit" type="submit">추가하기</button>
     </form>
+  </section>
+
+  <section id="weather-section">
+    <h2>날씨</h2>
+    <div class="weather" id="weather"><p class="note">날씨를 불러오는 중이에요…</p></div>
+    <p class="hint" id="weather-at" style="margin:0"></p>
   </section>
 
   <footer>운영시간과 휴무일은 바뀔 수 있으니 가기 전에 네이버 지도에서 한 번 더 확인하세요.</footer>
