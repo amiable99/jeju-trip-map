@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
 <title>하천바람집 여행 지도</title>
-<meta name="description" content="제주 표선 가족여행 - 숙소 근처 식당과 가볼 곳">
+<meta name="description" content="제주 표선 가족여행 - 숙소 근처 식당과 가볼 만한 곳">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='%23C2491D'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%23fff'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
 <style>
@@ -93,7 +93,7 @@ form h3{margin:0;font-size:15px}
   <header>
     <span class="eyebrow">제주 표선 · 10월 가족여행 11명</span>
     <h1>하천바람집에서 갈 곳</h1>
-    <p class="sub">숙소 기준으로 식당과 가볼 곳을 모았어요. 지도나 목록에서 이름을 누르면 네이버 지도가 열려요.</p>
+    <p class="sub">숙소 기준으로 식당과 가볼 만한 곳을 모았어요. 지도나 목록에서 이름을 누르면 네이버 지도가 열려요.</p>
   </header>
 
   <div>
@@ -160,7 +160,7 @@ form h3{margin:0;font-size:15px}
           <circle cx="40" cy="62" r="6" style="fill:var(--food)"/><text x="54" y="66">식당</text>
           <circle cx="40" cy="84" r="6" style="fill:var(--cafe)"/><text x="54" y="88">카페</text>
           <circle cx="40" cy="106" r="6" style="fill:var(--dessert)"/><text x="54" y="110">디저트</text>
-          <circle cx="40" cy="128" r="6" style="fill:var(--spot)"/><text x="54" y="132">가볼 곳</text>
+          <circle cx="40" cy="128" r="6" style="fill:var(--spot)"/><text x="54" y="132">가볼 만한 곳</text>
           <circle cx="40" cy="150" r="6" style="fill:var(--mart)"/><text x="54" y="154">마트</text>
         </g>
         <path d="M620 590 V562 M612 572 L620 562 L628 572" fill="none" style="stroke:var(--fg)" stroke-width="1.5"/>
@@ -252,8 +252,8 @@ form h3{margin:0;font-size:15px}
   </section>
 
   <section>
-    <h2><span class="dot" style="background:var(--spot)"></span>가볼 곳</h2>
-    <div class="list" id="list-가볼 곳">
+    <h2><span class="dot" style="background:var(--spot)"></span>가볼 만한 곳</h2>
+    <div class="list" id="list-가볼 만한 곳">
       <a class="card" href="https://naver.me/x7eIQLMG" target="_blank" rel="noopener">
         <span class="name">따라비오름</span>
         <span class="meta"><span>가시리 · 차로 15~20분</span><span>10월 억새 절정, 정상까지 약 30분</span></span>
@@ -276,7 +276,7 @@ form h3{margin:0;font-size:15px}
 
   <section id="add">
     <h2>찾은 곳 추가하기</h2>
-    <p class="sub" style="font-size:14px">종류를 고르면 위의 식당·카페·디저트·가볼 곳·마트 목록에 함께 보여요.</p>
+    <p class="sub" style="font-size:14px">종류를 고르면 위의 식당·카페·디저트·가볼 만한 곳·마트 목록에 함께 보여요.</p>
     <p class="err" id="list-err" role="alert"></p>
     <form id="add-form" novalidate>
       <fieldset class="kinds">
@@ -284,7 +284,7 @@ form h3{margin:0;font-size:15px}
         <label class="kind" style="--k:var(--food)"><input type="radio" name="kind" value="식당" checked><span><i></i>식당</span></label>
         <label class="kind" style="--k:var(--cafe)"><input type="radio" name="kind" value="카페"><span><i></i>카페</span></label>
         <label class="kind" style="--k:var(--dessert)"><input type="radio" name="kind" value="디저트"><span><i></i>디저트</span></label>
-        <label class="kind" style="--k:var(--spot)"><input type="radio" name="kind" value="가볼 곳"><span><i></i>가볼 곳</span></label>
+        <label class="kind" style="--k:var(--spot)"><input type="radio" name="kind" value="가볼 만한 곳"><span><i></i>가볼 만한 곳</span></label>
         <label class="kind" style="--k:var(--mart)"><input type="radio" name="kind" value="마트"><span><i></i>마트</span></label>
       </fieldset>
       <div class="field">
@@ -346,7 +346,7 @@ const CANDIDATES = [
 
 (function(){
   const BY_KEY = 'jejuTrip.addedBy';
-  const KINDS = ['식당', '카페', '디저트', '가볼 곳', '마트'];
+  const KINDS = ['식당', '카페', '디저트', '가볼 만한 곳', '마트'];
   const MSG = {
     name_required: '장소 이름을 입력해 주세요.',
     name_too_long: '장소 이름은 60자까지 쓸 수 있어요.',
@@ -371,10 +371,10 @@ const CANDIDATES = [
     { name: '교래흑돼지', kind: '식당', lat: 33.3301299, lon: 126.8208621, link: 'https://naver.me/xiLeBqEc' },
     { name: '당케올레국수', kind: '식당', lat: 33.3253355, lon: 126.8431227, link: 'https://naver.me/GDQRfCbl' },
     { name: '표선삼춘네생솥뚜껑', kind: '식당', lat: 33.3248443, lon: 126.8330871, link: 'https://naver.me/FnsZdV7V' },
-    { name: '따라비오름', kind: '가볼 곳', lat: 33.3870582, lon: 126.7534582, link: 'https://naver.me/x7eIQLMG', label: true },
-    { name: '빛의 벙커', kind: '가볼 곳', lat: 33.4399386, lon: 126.8990193, link: 'https://naver.me/GKIP2zqi', label: true },
+    { name: '따라비오름', kind: '가볼 만한 곳', lat: 33.3870582, lon: 126.7534582, link: 'https://naver.me/x7eIQLMG', label: true },
+    { name: '빛의 벙커', kind: '가볼 만한 곳', lat: 33.4399386, lon: 126.8990193, link: 'https://naver.me/GKIP2zqi', label: true },
   ];
-  const COLOR = { '숙소': 'var(--stay)', '식당': 'var(--food)', '카페': 'var(--cafe)', '디저트': 'var(--dessert)', '가볼 곳': 'var(--spot)', '마트': 'var(--mart)' };
+  const COLOR = { '숙소': 'var(--stay)', '식당': 'var(--food)', '카페': 'var(--cafe)', '디저트': 'var(--dessert)', '가볼 만한 곳': 'var(--spot)', '마트': 'var(--mart)' };
   const localXY = (lat, lon) => [40 + (lon - 126.72) * 2500, 50 + (33.45 - lat) * 2975];
   const islandXY = (lat, lon) => [21 + (lon - 126.14) * 760, 20 + (33.58 - lat) * 910];
   const inLocal = ([x, y]) => x > 12 && x < 668 && y > 12 && y < 588;
@@ -396,7 +396,7 @@ const CANDIDATES = [
   function pin(parent, [x, y], p, r, label, fontSize, taken){
     const link = safeLink(p.link);
     const g = link ? svgEl('a', { href: link, target: '_blank', rel: 'noopener' }) : svgEl('g', {});
-    g.appendChild(svgEl('circle', { cx: x, cy: y, r, style: `fill:${COLOR[p.kind] || COLOR['가볼 곳']};stroke:var(--surface)`, 'stroke-width': 2 }));
+    g.appendChild(svgEl('circle', { cx: x, cy: y, r, style: `fill:${COLOR[p.kind] || COLOR['가볼 만한 곳']};stroke:var(--surface)`, 'stroke-width': 2 }));
     parent.appendChild(g);
     if (!label) return;
     const t = svgEl('text', { class: 'name halo', 'font-size': fontSize, 'font-weight': 600 }, short(label));
@@ -469,7 +469,10 @@ const CANDIDATES = [
       const res = await fetch(API_URL);
       const data = await res.json();
       if (!data.ok) throw new Error(data.error);
-      places = (Array.isArray(data.places) ? data.places : []).map(withCoord);
+      // 예전 종류 이름 '가볼 곳'으로 저장된 줄도 '가볼 만한 곳'으로 보여 준다.
+      places = (Array.isArray(data.places) ? data.places : [])
+        .map(p => p.kind === '가볼 곳' ? { ...p, kind: '가볼 만한 곳' } : p)
+        .map(withCoord);
       listErr.textContent = '';
     } catch (e) {
       listErr.textContent = MSG.load_failed;
@@ -512,11 +515,11 @@ const CANDIDATES = [
   }
 
   function render(){
-    // 가족이 추가한 곳은 고른 종류(식당·카페·디저트·가볼 곳·마트)의 목록 끝에 붙인다.
+    // 가족이 추가한 곳은 고른 종류(식당·카페·디저트·가볼 만한 곳·마트)의 목록 끝에 붙인다.
     document.querySelectorAll('.card.added').forEach(n => n.remove());
     document.querySelectorAll('.added-empty[data-kind]').forEach(n => { n.hidden = places.some(p => p.kind === n.dataset.kind); });
     for (const p of places) {
-      const list = $('list-' + p.kind) || $('list-가볼 곳');
+      const list = $('list-' + p.kind) || $('list-가볼 만한 곳');
       const card = el('div', 'card added');
       card.appendChild(el('span', 'name', p.name || ''));
       const meta = el('span', 'meta');
